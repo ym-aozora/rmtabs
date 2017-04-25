@@ -1,0 +1,40 @@
+extends: google
+
+parser: babel-eslint
+
+plugins:
+  - react
+
+env:
+  es6: true
+  browser: true
+
+ecmaFeatures:
+  modules: true
+
+globals:
+  window: false
+  console: false
+  setTimeout: false
+  clearTimeout: false
+  Promise: false
+
+rules:
+  max-len:
+    - 1
+    - 80
+    - 4
+    - ignoreComments: true
+      ignoreUrls: true
+      ignoreStrings: true
+      ignoreTemplateLiterals: true
+  react/jsx-uses-react: 1
+  react/jsx-uses-vars: 1
+  react/react-in-jsx-scope: 1
+  require-jsdoc:
+    - 1
+    - require:
+        FunctionDeclaration: true
+        MethodDefinition: true
+        ClassDeclaration: true
+        ArrowFunctionExpression: true
