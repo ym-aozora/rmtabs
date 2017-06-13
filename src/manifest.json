@@ -5,16 +5,17 @@
   "description": "Quickly remove a lot of tabs.",
   "homepage_url": "https://github.com/ym-aozora/rmtabs.git",
   "icons": {
-    "128": "img/icon.png",
-    "16": "img/icon16.png",
-    "19": "img/icon19.png",
-    "32": "img/icon32.png",
-    "48": "img/icon48.png",
-    "64": "img/icon64.png"
+    "16": "img/icon-16.png",
+    "19": "img/icon-19.png",
+    "32": "img/icon-32.png",
+    "48": "img/icon-48.png",
+    "64": "img/icon-64.png",
+    "128": "img/icon-128.png"
   },
   "permissions": [
     "background",
-    "tabs"
+    "tabs",
+    "notifications"
   ],
   "web_accessible_resources": [],
   "background": {
@@ -22,6 +23,7 @@
       "js/background.js"
     ]
   },
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
@@ -138,8 +140,8 @@
   ],
   "browser_action": {
     "default_icon": {
-      "19": "img/icon19.png",
-      "32": "img/icon32.png"
+      "19": "img/icon-19.png",
+      "32": "img/icon-32.png"
     },
     "default_title": "RmTabs"
   },

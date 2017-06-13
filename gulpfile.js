@@ -1,8 +1,11 @@
 const $ = require('gulp-load-plugins')();
+const cssnano = require('cssnano');
+const cssnext = require('postcss-cssnext');
 const gulp = require('gulp');
 const notifier = require('node-notifier');
 const pngquant = require('imagemin-pngquant');
 const runsequence = require('run-sequence');
+const sorting = require('postcss-sorting');
 const webpack = require('webpack');
 const webpackconfig = require('./webpack.config.js');
 const inproduction = ('production' === process.env.NODE_ENV);
@@ -31,7 +34,7 @@ gulp.task('archive', (callback) => {
 
 gulp.task('build', (callback) => {
   runsequence(
-    ['clean', 'htmlhint'],
+    ['clean'],
     ['copyvendor', 'manifest', 'locale', 'optimizeimage', 'styles', 'scripts', 'htmlmin'],
     () => {
       notifier.notify({title: 'Task done', message: 'Build done.'}, callback);
@@ -40,24 +43,18 @@ gulp.task('build', (callback) => {
 });
 
 gulp.task('clean', () => {
-  return gulp.src(['./dist', '.tmp'], {read: false})
+  return gulp.src(['dist', '.tmp'], {read: false})
     .pipe($.rimraf());
 });
 
 gulp.task('copyvendor', () => {
-  return gulp.src('./src/vendor/**/*')
+  return gulp.src('src/vendor/**/*')
     .pipe($.plumber({errorHandler: $.notify.onError('<%= error.message %>')}))
-    .pipe(gulp.dest('./dist/vendor'));
-});
-
-gulp.task('htmlhint', () => {
-  return gulp.src('./src/html/**/*.html')
-    .pipe($.htmlhint())
-    .pipe($.htmlhint.reporter());
+    .pipe(gulp.dest('dist/vendor'));
 });
 
 gulp.task('htmlmin', () => {
-  return gulp.src(['./src/html/**/*.html'])
+  return gulp.src(['src/html/**/*.html'])
     .pipe($.plumber({errorHandler: $.notify.onError('<%= error.message %>')}))
     .pipe($.htmlmin({
       removeComments: inproduction,
@@ -69,32 +66,32 @@ gulp.task('htmlmin', () => {
       removeScriptTypeAttributes: true,
       removeStyleLinkTypeAttributes: true,
     }))
-    .pipe(gulp.dest('./dist/html'));
+    .pipe(gulp.dest('dist/html'));
 });
 
 gulp.task('locale', () => {
-  return gulp.src('./src/_locales/**/*')
+  return gulp.src('src/_locales/**/*')
     .pipe($.plumber({errorHandler: $.notify.onError('<%= error.message %>')}))
     .pipe($.jsonmin())
-    .pipe(gulp.dest('./dist/_locales'));
+    .pipe(gulp.dest('dist/_locales'));
 });
 
 gulp.task('manifest', () => {
-  return gulp.src('./src/manifest.json')
+  return gulp.src('src/manifest.json')
     .pipe($.plumber({errorHandler: $.notify.onError('<%= error.message %>')}))
     .pipe($.jsonmin())
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('optimizeimage', () => {
-  return gulp.src(['./src/img/**/*'])
+  return gulp.src(['src/img/**/*'])
     .pipe($.imagemin({
       use: [pngquant({
         quality: '80-95',
         speed: 1,
       })],
     }))
-    .pipe(gulp.dest('./dist/img'));
+    .pipe(gulp.dest('dist/img'));
 });
 
 gulp.task('scripts', (callback) => {
@@ -112,12 +109,12 @@ gulp.task('scripts', (callback) => {
 });
 
 gulp.task('styles', () => {
-  return gulp.src('./src/sass/**/*.scss')
+  return gulp.src('src/sass/**/*.scss')
     .pipe($.plumber({errorHandler: $.notify.onError('<%= error.message %>')}))
     .pipe($.if(!inproduction, $.sourcemaps.init()))
     .pipe($.sass({
       includePaths: [
-        './node_modules/normalize-scss/sass',
+        'node_modules/normalize-scss/sass',
       ],
     }))
     .pipe($.postcss([
@@ -131,54 +128,54 @@ gulp.task('styles', () => {
       cssnano(),
     ]))
     .pipe($.header(header))
-    .pipe($.if(!inproduction, $.sourcemaps.write('./')))
-    .pipe(gulp.dest('./dist/css'));
+    .pipe($.if(!inproduction, $.sourcemaps.write('')))
+    .pipe(gulp.dest('dist/css'));
 });
 
 gulp.task('zip', ['build'], () => {
-  let manifest = require('./src/manifest');
+  let manifest = require('src/manifest');
   let filename = (manifest.name + '-v' + manifest.version + '.zip')
     .replace(/\s/, '-')
     .toLowerCase();
 
-  return gulp.src('./dist/**')
+  return gulp.src('dist/**')
     .pipe($.plumber({errorHandler: $.notify.onError('<%= error.message %>')}))
     .pipe($.zip(filename))
-    .pipe(gulp.dest('./archive'));
+    .pipe(gulp.dest('archive'));
 });
 
 gulp.task('watch', ['build'], () => {
-  gulp.watch('./src/manifest.json', () => {
+  gulp.watch('src/manifest.json', () => {
     runsequence('manifest', () => {
       notifier.notify({title: 'Task done', message: 'manifest done.'});
     });
   });
 
-  gulp.watch('./src/_locales/**/*', () => {
+  gulp.watch('src/_locales/**/*', () => {
     runsequence('locale', () => {
       notifier.notify({title: 'Task done', message: 'locale done.'});
     });
   });
 
-  gulp.watch('./src/html/**/*', () => {
-    runsequence('htmlhint', 'htmlmin', () => {
+  gulp.watch('src/html/**/*', () => {
+    runsequence('htmlmin', () => {
       notifier.notify({title: 'Task done', message: 'build done.'});
     });
   });
 
-  gulp.watch('./src/img/**/*', () => {
+  gulp.watch('src/img/**/*', () => {
     runsequence('optimizeimage', () => {
       notifier.notify({title: 'Task done', message: 'optimize image done.'});
     });
   });
 
-  gulp.watch('./src/js/**/*', () => {
+  gulp.watch('src/js/**/*', () => {
     runsequence('scripts', () => {
       notifier.notify({title: 'Task done', message: 'scripts done.'});
     });
   });
 
-  gulp.watch('./src/sass/**/*', () => {
+  gulp.watch('src/sass/**/*', () => {
     runsequence('styles', () => {
       notifier.notify({title: 'Task done', message: 'styles done.'});
     });

@@ -1,0 +1,17 @@
+{
+  "notification_remove_tabs": {
+    "message": "<%- length %> tabs on the <%- align %> side have been deleted."
+  },
+  "notification_system_error": {
+    "message": "A system error has occurred."
+  },
+  "left": {
+    "message": "left"
+  },
+  "right": {
+    "message": "right"
+  },
+  "undo": {
+    "message": "Undo"
+  }
+}

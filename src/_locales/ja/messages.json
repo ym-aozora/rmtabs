@@ -1,0 +1,17 @@
+{
+  "notification_remove_tabs": {
+    "message": "<%- align %>側のタブを<%- length %>個削除しました。"
+  },
+  "notification_system_error": {
+    "message": "システムエラーが発生しました。"
+  },
+  "left": {
+    "message": "左"
+  },
+  "right": {
+    "message": "右"
+  },
+  "undo": {
+    "message": "元に戻す"
+  }
+}
