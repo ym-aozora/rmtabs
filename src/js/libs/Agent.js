@@ -54,10 +54,8 @@ export default class Agent {
     methods.forEach((method) => {
       const port = this.chrome.extension.connect({name: method});
 
-      delete this.ports[method];
-
       port.onDisconnect.addListener(() => {
-        this.ports[method] = false;
+        delete this.ports[method];
       });
 
       this.ports[method] = port;
@@ -86,5 +84,15 @@ export default class Agent {
         this.window.getSelection().collapse(document.body, 0);
       }
     });
+  }
+
+  /**
+   * 削除後のイベントハンドラ
+   *
+   * @param {Object} response レスポンス
+   */
+  onRemovedTabs(response) {
+    // TODO: 処理が必要であればここに追記
+    // console.log('onRemovedTabs', response);
   }
 }

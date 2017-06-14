@@ -30,6 +30,7 @@ export default class Manager {
    * 初期化処理
    */
   init() {
+    // 接続された際の処理
     this.chrome.extension.onConnect.addListener((port) => {
       if ('name' in port && port.name in this) {
         port.onMessage.addListener(this[port.name].bind(this));
@@ -38,9 +39,11 @@ export default class Manager {
       }
     });
 
+    // 通知をクリックされた際の処理
     this.chrome.notifications.onClicked.addListener((notificationId) => {
       switch (notificationId) {
         case 'REMOVE_TABS':
+          // 通知をクリックした際の振る舞い
           // this.chrome.notifications.clear(notificationId);
           break;
         default:
@@ -48,14 +51,17 @@ export default class Manager {
       }
     });
 
+    // 通知のボタンをクリックされた際の処理
     this.chrome.notifications.onButtonClicked.addListener(
       (notificationId, buttonIndex) => {
         switch (notificationId) {
           case 'REMOVE_TABS':
             if (buttonIndex === 0) {
+              // 削除通知かつ1番目は「元に戻す」処理
               this.undoTabs();
             }
 
+            // 通知を削除
             this.chrome.notifications.clear(notificationId);
             break;
           default:
@@ -120,6 +126,9 @@ export default class Manager {
       .then((win) => {
         const tabs = _.cloneDeep(win.tabs);
 
+        // ソート
+        // 右側 = インデックスの昇順
+        // 左側 = インデックスの降順
         tabs.sort((a, b) => {
           if (a.index < b.index) {
             return message.align === 'right' ? -1 : 1;
@@ -130,20 +139,27 @@ export default class Manager {
           return 0;
         });
 
-        const removeTabs = _.slice(tabs, _.findIndex(tabs, {
-          active: true,
-        }) + 1);
+        // 現在のタブより後ろにあるものを削除対象とする
+        const activeTabIndex = _.findIndex(tabs, {active: true});
+        const activeTab = tabs[activeTabIndex];
+        const removeTabs = _.slice(tabs, activeTabIndex + 1);
 
+        // タブを削除
         this.chrome.tabs.remove(removeTabs.map((item) => item.id), () => {
-          this.histories.push({
+          const history = {
             align: message.align,
             removeTabs,
-            at: new Date(),
-          });
+            removedAt: new Date().toLocaleString(),
+          };
 
+          // 履歴を追加
+          this.histories.push(history);
+
+          // 通知
           chrome.notifications.create('REMOVE_TABS', {
             type: 'basic',
             title: 'RmTabs',
+            // メッセージをテンプレートから生成
             message: _.template(chrome.i18n.getMessage('notification_remove_tabs'))({
               length: removeTabs.length,
               align: chrome.i18n.getMessage(message.align),
@@ -156,9 +172,16 @@ export default class Manager {
               },
             ],
           });
+
+          // 送信元のタブへイベント名・送信メッセージ・履歴を梱包して送信
+          this.chrome.tabs.sendMessage(activeTab.id, {
+            name: 'onRemovedTabs',
+            message,
+            history,
+          });
         });
       })
-      .catch(this.onError);
+      .catch(console.error);
   }
 
   /**
@@ -180,7 +203,7 @@ export default class Manager {
           });
         });
       })
-      .catch(this.onError);
+      .catch(console.error);
   }
 
   /**
@@ -193,21 +216,9 @@ export default class Manager {
 
     // 30件に保つ
     this.histories = _.slice(this.histories, 0, 30);
-  }
 
-  /**
-   * エラーハンドラ
-   *
-   * @param {Error} e エラー
-   */
-  onError(e) {
-    console.error(e);
-
-    chrome.notifications.create('ON_ERROR', {
-      type: 'basic',
-      title: 'RmTabs',
-      message: chrome.i18n.getMessage('notification_system_error'),
-      iconUrl: 'img/icon-512.png',
-    });
+    // TODO: historiesについて
+    // * localStorageに保存する
+    // * 件数でなく日付の範囲にするかもしれない(1ヶ月など)
   }
 }
