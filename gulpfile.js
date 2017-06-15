@@ -133,7 +133,7 @@ gulp.task('styles', () => {
 });
 
 gulp.task('zip', ['build'], () => {
-  let manifest = require('src/manifest');
+  let manifest = require('./src/manifest.json');
   let filename = (manifest.name + '-v' + manifest.version + '.zip')
     .replace(/\s/, '-')
     .toLowerCase();

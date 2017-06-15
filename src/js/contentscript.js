@@ -5,6 +5,6 @@
 import Agent from './libs/Agent';
 
 /**
- * LinkBlanker agent.
+ * Agent.
  */
 window.Agent = new Agent(window, chrome);

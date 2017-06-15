@@ -4,4 +4,5 @@ npm-debug.log*
 dist/
 doc/
 coverage/
+archive/
 node_modules/
